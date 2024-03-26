@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <title>DNT Viewer</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <script src="cdn/angular.min.js"></script>
+    <script src="cdn/angular-sanitize.min.js"></script>
+    <script src="cdn/jquery-1.11.3.min.js"></script>
+    <script src="cdn/zip.js"></script>
+    <script src="cdn/inflate.js"></script>
+    <script src="cdn/bootstrap.min.js"></script>
+    <script src="cdn/ng-csv.min.js"></script>
+    <script src="cdn/ag-grid.min.js"></script>
+    <script src="cdn/lz-string.min.js"></script>
+
+    <script src="simplerreader.js"></script>
+    <script src="fileupload.js"></script>
+    <script src="dntranslations.js"></script>
+    <script src="dntreader.js"></script>
+    <script src="dntview.js"></script>
+    <script src="dntviewer-directives.js"></script>
+    
+    <script src="dntviewer.js"></script>
+    
+    <link rel="stylesheet" href="cdn/bootstrap.min.css">
+    <link rel="stylesheet" href="cdn/bootstrap-theme.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="cdn/ag-grid.min.css">
+    <link rel="stylesheet" type="text/css" href="cdn/theme-fresh.min.css">
+    
+    <link rel="stylesheet" href="dntviewer.css">
+  </head>
+  
+  <body onload="dntPageInit();">
+      
+  <div ng-app="myapp" ng-controller="myctrl">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xs-12 col-sm-8 col-lg-9">
+          <div class="row"> 
+             <div class="col-xs-12">
+                <h1>DNT 查看器 <small>查看Dnt内容</small></h1>
+                <form id="fileForm">
+                <div id="drop_zone" class="bg-info">
+                  选择dnt文件上传<br />
+                  <input type="file" id="files" />
+                  <div id="progress_bar"></div>
+                </div>
+                </form>
+                <output id="list"></output>
+             </div>
+          </div>
+
+              
+          <div class="row">
+            <div class="col-xs-12">
+            <output id="load_results"></output>
+            </div>
+          </div>
+          
+          
+          <div class="row">
+            <div class="col-xs-12">
+              <div id="myGrid" style="height: 700px" class="ag-fresh"></div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-12">
+              <button class="btn btn-link" ng-click="clickFn()" ng-csv="getArray()" csv-header="getHeader()" filename="{{ filename }}.csv" field-separator="," decimal-separator=".">Download table as csv</button>
+            </div>
+            <!-- <div class="col-xs-12">
+            <div>Max Rows: <input id="itemLimit" type="text" value="5" /> <small>(do not make too high)</small>
+            <span class="checkbox"><label><input id="pivotData" type="checkbox" onClick="refreshTable();"> Pivot Data</input></label></span>
+            </div>
+            </div> -->
+          </div>
+            
+      </div>
+      <div class="col-xs-12 col-sm-4 col-lg-3">
+        <div id="loadTranslations">
+          <form id="tFileForm">
+          <!-- <a href="#" onclick="reloadHostedTFile();return false;">Reload hosted files</a> -->
+          <div id="tdrop_zone" class="bg-info">
+            <input type="file" id="tfiles" />
+            <span id="tprogress_bar"></span>
+          </div>
+          </form>
+        </div>
+        
+        <!-- <h3>Auto-Translate Columns:</h3> -->
+        <div class="row">
+          <div class="col-xs-12 col-md-6">
+        		<form onsubmit="refreshTable();" action="javascript:void(0);">
+          	<!-- <div id="tBoxes1">
+	            <input id="translate0" class="form-control" value="NameID" type="text" />
+	            <input id="translate2" class="form-control" value="DescriptionID" type="text" />
+	            <input id="translate4" class="form-control" value="JobName" type="text" />
+	            <input id="translate6" class="form-control" value="SubTitleNameID" type="text" />
+	            <input id="translate8" class="form-control" value="" type="text" />
+            </div> -->
+            </form>
+            
+
+    		    <label>
+    		      <input id="autoTranslate" onClick="refreshTable();"></input> 
+    		    </label>
+
+          </div>
+          <!-- <div class="col-xs-12 col-md-6">
+        		<form onsubmit="refreshTable();" action="javascript:void(0);">
+          	<div id="tBoxes2">
+	            <input id="translate1" class="form-control" value="NameIDParam" type="text" />
+	            <input id="translate3" class="form-control" value="DescriptionIDParam" type="text" />
+	            <input id="translate5" class="form-control" value="TitleNameID" type="text" />
+	            <input id="translate7" class="form-control" value="MapNameID" type="text" />
+	            <input id="translate9" class="form-control" value="" type="text" />
+            </div>
+            </form>
+            
+            <button class="btn btn-default" onClick="addTRow();">Add</button>
+            <button class="btn btn-default" onClick="refreshTable();">Refresh</button>
+          </div> -->
+        </div>
+        
+        <!--
+        <h3>Filters:</h3>
+        <div class="row">
+          <div class="col-xs-6">
+        		Filter Column:
+        		<form onsubmit="refreshTable();" action="javascript:void(0);">
+        		<div id="fcolumns">
+        			<input id="filterColumn0" class="form-control" value="" type="text" />
+        		</div>
+        		</form>
+        	</div>
+        	<div class="col-xs-6">
+        		Using Value:
+        		<form onsubmit="refreshTable();" action="javascript:void(0);">
+        		<div id="fvalues">
+        			<input id="filterValue0" class="form-control" value="" type="text" />
+        		</div>
+        		</form>
+            <button class="btn btn-default" onClick="addFRow();">Add</button>
+            <button class="btn btn-default" onClick="refreshTable();">Refresh</button>
+        	</div>
+        </div>
+      -->
+      </div>
+    </div>
+  </body>
+</html>
